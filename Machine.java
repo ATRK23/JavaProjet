@@ -16,7 +16,11 @@ public class Machine{
         return this.ressources;
     }
     public synchronized void createRessource(int nb_res,String res){
-        this.ressources.put(res, nb_res);
+        int nb = nb_res; 
+        if(nb < 0){
+            nb = 0;
+        }
+        this.ressources.put(res, nb);
     }
     public synchronized void addRessource(int nb_res,String res){
         ressources.put(res, ressources.get(res)+nb_res);

@@ -12,6 +12,7 @@ public class MainServer{
             a.createRessource(2, "B");
             b.createRessource(1, "C");
             c.createRessource(0, "D");
+            c.createRessource(3, "A");
             Server geacie = new Server(12345, 10);
             geacie.manageRequest();
         } catch (Exception e){
