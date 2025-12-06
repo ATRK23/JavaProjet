@@ -26,21 +26,30 @@ public class Slave implements Runnable {
             Map<String, Map<String, Integer>> termes = parse_msg(message);
 
             Map<String, Integer> consommables = termes.get("Besoin");
-            Map<String, Integer> produits = termes.get("Resultat");
+            //Map<String, Integer> produits = termes.get("Resultat");
 
-            //pas terminé
+            ArrayList<Machine> total = new ArrayList<>();
+            String ressou;
             for(Machine m : machines){
-                boolean b = check_ressources(consommables, m);
+                ressou = check_ressources(consommables, m);
+                if(ressou != null){
+                    total.add(m);
+                }
+                consommables.remove(ressou);
+                if(consommables.size() == 0){
+                    break;
+                }
             }
-
-
+            if(total.size() == 0 || consommables.size() > 0){
+                output_client.writeUTF("Abord");
+            }
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
 
     }
 
-    public boolean check_ressources(Map<String, Integer> besoins, Machine machine){
+    public String check_ressources(Map<String, Integer> besoins, Machine machine){
         synchronized (machine) {
             for (Map.Entry<String, Integer> entree : besoins.entrySet()) {
                 String ressource = entree.getKey();
@@ -48,10 +57,13 @@ public class Slave implements Runnable {
 
                 int nb_dispo = machine.is_ressources_in(ressource);
                 if (nb_dispo < quantite) {
-                    return false;
+                    return null;
+                }
+                else{
+                    return ressource;
                 }
             }
-            return true;
+            return null;
         }
     }
 
