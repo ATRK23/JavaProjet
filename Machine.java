@@ -31,11 +31,15 @@ public class Machine{
     public static void addMachine(Machine machine) {
         database.add(machine);
     }
-    public boolean is_ressources_in(String s){
-        return ressources.containsKey(s);
+    public int is_ressources_in(String s){
+        if(ressources.containsKey(s)){
+            return ressources.get(s);
+        }
+        else{return 0;}
     }
     public static List<Machine> getDatabase() {
         return database;
     }
 
 } 
+
