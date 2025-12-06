@@ -1,10 +1,16 @@
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Machine{
     private Map< String,Integer> ressources;
+    private static List<Machine> database = new ArrayList<>();
+
+
     public Machine(){
         this.ressources = new HashMap<>();
+        database.add(this);
     }
     public synchronized Map<String,Integer> get_ressources(){
         return this.ressources;
@@ -22,7 +28,14 @@ public class Machine{
             throw new Exception("argument nb cannot be negative");
         }
     }
+    public static void addMachine(Machine machine) {
+        database.add(machine);
+    }
     public boolean is_ressources_in(String s){
         return ressources.containsKey(s);
     }
+    public static List<Machine> getDatabase() {
+        return database;
+    }
+
 } 
