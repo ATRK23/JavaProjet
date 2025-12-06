@@ -31,28 +31,29 @@ public class Slave implements Runnable {
     }
 
     public Map<String, Map<String, Integer>> parse_msg(String entry) throws IllegalArgumentException{
-        String[] kirby = entry.split("->");
-        if(kirby.length != 2){
+        String[] message = entry.split("->");
+        if(message.length != 2){
             throw new IllegalArgumentException("Format pas bon\nBon format : 3A + 2C -> 4A");
         }
-        Map<String, Integer> men = parseuuur(kirby[0].trim());
-        Map<String, Integer> deluxe = parseuuur(kirby[1].trim());
+        Map<String, Integer> consommables = parseur(message[0].trim());
+        Map<String, Integer> produits = parseur(message[1].trim());
   
         Map<String, Map<String, Integer>> res = new HashMap<>();
-        res.put("Besoin", men);
-        res.put("Resultat", deluxe);
+        res.put("Besoin", consommables);
+        res.put("Resultat", produits);
         return res;
     }
 
-    public static Map<String, Integer> parseuuur(String s){
-        Pattern Patate = Pattern.compile("(\\d+)([A-Z]+)");
-        Map<String, Integer> deluxe = new HashMap<>();
-        Matcher match = Patate.matcher(s);
+    public static Map<String, Integer> parseur(String s){
+        Pattern pattern = Pattern.compile("(\\d+)([A-Z]+)");
+        Map<String, Integer> res = new HashMap<>();
+
+        Matcher match = pattern.matcher(s);
         while (match.find()){
-            String geacie = match.group(2);
-            int arthur = Integer.parseInt(match.group(1));
-            deluxe.put(geacie, arthur);
+            String lettre = match.group(2);
+            int chiffre = Integer.parseInt(match.group(1));
+            res.put(lettre, chiffre);
         }
-        return deluxe;
+        return res;
     }
 }
