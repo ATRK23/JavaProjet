@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+//import java.util.List;
 import java.util.Map;
 
 public class Machine{
     private Map< String,Integer> ressources;
-    private static List<Machine> database = new ArrayList<>();
+    private static ArrayList<Machine> database = new ArrayList<>();
 
 
     public Machine(){
@@ -37,7 +37,7 @@ public class Machine{
         }
         else{return 0;}
     }
-    public static List<Machine> getDatabase() {
+    public static ArrayList<Machine> getDatabase() {
         return database;
     }
 

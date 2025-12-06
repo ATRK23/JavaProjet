@@ -41,7 +41,7 @@ public class Server{
         try {
             System.out.println("Waiting for connections...");
             while(!isFinished){
-                this.pool.execute(new Slave(server.accept()));
+                this.pool.execute(new Slave(server.accept(), Machine.getDatabase()));
                 System.out.println("Connection  [OK] ");
             }
 

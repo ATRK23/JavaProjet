@@ -23,11 +23,14 @@ public class Slave implements Runnable {
             ObjectOutputStream output_client = new ObjectOutputStream(client.getOutputStream());
             String message = ((String) input_client.readObject());
 
+            System.out.println(message);
+            
             Map<String, Map<String, Integer>> termes = parse_msg(message);
-
+            System.out.println(termes);
+            
             Map<String, Integer> consommables = termes.get("Besoin");
             //Map<String, Integer> produits = termes.get("Resultat");
-
+            
             ArrayList<Machine> total = new ArrayList<>();
             String ressou;
             for(Machine m : machines){
@@ -40,6 +43,7 @@ public class Slave implements Runnable {
                     break;
                 }
             }
+            System.out.println(total);
             if(total.size() == 0 || consommables.size() > 0){
                 output_client.writeUTF("Abord");
             }

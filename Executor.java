@@ -49,10 +49,10 @@ public class Executor {
 
 
 
-            /*             output.writeUTF(message);
         try (Socket s_client = new Socket(mac[0],  Integer. parseInt(mac[1]));
-             DataOutputStream output = new DataOutputStream(s_client.getOutputStream())) {
+            DataOutputStream output = new DataOutputStream(s_client.getOutputStream())) {
             
+            output.writeUTF(message);
             System.out.println("Connexion au Serveur [OK]");
     
            
@@ -66,7 +66,7 @@ public class Executor {
 
 
 
-         --reaction "A -> C" --reaction "B + C -> D" --machine "127.0.0.1:12345"
-        */
+         //--reaction "A -> C" --reaction "B + C -> D" --machine "127.0.0.1:12345"
+        
     }
 }
