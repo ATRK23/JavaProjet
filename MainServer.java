@@ -8,10 +8,10 @@ public class MainServer{
             Machine a = new Machine();
             Machine b = new Machine();
             Machine c = new Machine();
-            a.addRessource(3, "A");
-            a.addRessource(2, "B");
-            b.addRessource(1, "C");
-            c.addRessource(0, "D");
+            a.createRessource(3, "A");
+            a.createRessource(2, "B");
+            b.createRessource(1, "C");
+            c.createRessource(0, "D");
             Server geacie = new Server(12345, 10);
             geacie.manageRequest();
         } catch (Exception e){

@@ -1,4 +1,5 @@
-import java.io.DataOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -50,9 +51,9 @@ public class Executor {
 
 
         try (Socket s_client = new Socket(mac[0],  Integer. parseInt(mac[1]));
-            DataOutputStream output = new DataOutputStream(s_client.getOutputStream())) {
+            ObjectOutputStream output = new ObjectOutputStream(s_client.getOutputStream())) {
             
-            output.writeUTF(message);
+            output.writeObject(message);
             System.out.println("Connexion au Serveur [OK]");
     
            

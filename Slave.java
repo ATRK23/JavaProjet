@@ -16,6 +16,10 @@ public class Slave implements Runnable {
         this.machines = machines;
     }
 
+    public Socket getClient(){
+        return this.client;
+    }
+
     public void run() {
         try{
             System.out.println("[START] new client.");
@@ -32,13 +36,20 @@ public class Slave implements Runnable {
             //Map<String, Integer> produits = termes.get("Resultat");
             
             ArrayList<Machine> total = new ArrayList<>();
-            String ressou;
+            String ressouPro;
+            Integer qtDispo;
             for(Machine m : machines){
-                ressou = check_ressources(consommables, m);
-                if(ressou != null){
-                    total.add(m);
+                ressouPro = get_ressources_produce(consommables, m);
+                if(ressouPro != null){
+                    qtDispo = m.is_ressources_in(ressouPro);
+
+                    Integer besoinActuel = consommables.get(ressouPro);
+
+                    if(qtDispo >= besoinActuel){
+                        total.add(m);
+                        consommables.put(ressouPro, besoinActuel - qtDispo);
+                    }
                 }
-                consommables.remove(ressou);
                 if(consommables.size() == 0){
                     break;
                 }
@@ -53,26 +64,15 @@ public class Slave implements Runnable {
 
     }
 
-    public String check_ressources(Map<String, Integer> besoins, Machine machine){
-        synchronized (machine) {
-            for (Map.Entry<String, Integer> entree : besoins.entrySet()) {
-                String ressource = entree.getKey();
-                int quantite = entree.getValue();
-
-                int nb_dispo = machine.is_ressources_in(ressource);
-                if (nb_dispo < quantite) {
-                    return null;
-                }
-                else{
-                    return ressource;
-                }
+    public String get_ressources_produce(Map<String, Integer> besoins, Machine machine){
+        for (Map.Entry<String, Integer> entree : besoins.entrySet()) {
+            String ressource = entree.getKey();
+            int nb_dispo = machine.is_ressources_in(ressource);
+            if(nb_dispo > 0){ 
+                return ressource;
             }
-            return null;
         }
-    }
-
-    public Socket getClient(){
-        return this.client;
+        return null;
     }
 
     public Map<String, Map<String, Integer>> parse_msg(String entry) throws IllegalArgumentException{
