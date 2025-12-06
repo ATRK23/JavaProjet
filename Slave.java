@@ -1,6 +1,7 @@
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -8,9 +9,11 @@ import java.util.regex.Pattern;
 
 public class Slave implements Runnable {
     private Socket client;
+    private ArrayList<Machine> machines;
     
-    public Slave(Socket client){
+    public Slave(Socket client, ArrayList<Machine> machines){
         this.client = client;
+        this.machines = machines;
     }
 
     public void run() {
