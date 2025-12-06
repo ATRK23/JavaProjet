@@ -51,6 +51,7 @@ public class Slave implements Runnable {
                     return false;
                 }
             }
+            return true;
         }
     }
 
