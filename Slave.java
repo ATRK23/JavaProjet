@@ -21,12 +21,37 @@ public class Slave implements Runnable {
             System.out.println("[START] new client.");
             ObjectInputStream input_client = new ObjectInputStream(client.getInputStream());
             ObjectOutputStream output_client = new ObjectOutputStream(client.getOutputStream());
-            Map<String, Map<String, Integer>> message = 1;
+            String message = ((String) input_client.readObject());
+
+            Map<String, Map<String, Integer>> termes = parse_msg(message);
+
+            Map<String, Integer> consommables = termes.get("Besoin");
+            Map<String, Integer> produits = termes.get("Resultat");
+
+            //pas terminé
+            for(Machine m : machines){
+                boolean b = check_ressources(consommables, m);
+            }
+
 
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
 
+    }
+
+    public boolean check_ressources(Map<String, Integer> besoins, Machine machine){
+        synchronized (machine) {
+            for (Map.Entry<String, Integer> entree : besoins.entrySet()) {
+                String ressource = entree.getKey();
+                int quantite = entree.getValue();
+
+                int nb_dispo = machine.is_ressources_in(ressource);
+                if (nb_dispo < quantite) {
+                    return false;
+                }
+            }
+        }
     }
 
     public Socket getClient(){
