@@ -57,7 +57,7 @@ public class Executor {
         String message = "";
 
         for (String r : reactions) {
-            message = message + r + "/";
+            message = message + r + " ";
         }
 
         System.out.println(message);
@@ -86,6 +86,9 @@ public class Executor {
             System.err.println("Aucune adresse machine fournie.");
             return;
         }
+        System.out.println("ici ;" + message);
+         System.out.println("ici ;" + parseur(message));
+
         for (String r : reactions) {
             System.out.println(" reaction: " + r);
             if(checkreaction(r, mac, message)){
@@ -111,6 +114,7 @@ public class Executor {
         }
 
         List<Integer> results = new ArrayList<>();
+        System.out.println("zzzzzzzzzz"+results);
         Map<String, Integer> reactionMap = parseur(reaction);
         Map<String, Integer> finalReactionMap = new HashMap<>();
 
@@ -157,6 +161,7 @@ public class Executor {
 
             if (reactionMap.isEmpty()) {
                 // send the finalReactionMap back to servers that matched
+                System.out.println("zzzz"+results);
                 for (int n : results) {
                     try (Socket s2 = new Socket(mac[n][0], Integer.parseInt(mac[n][1]));
                          ObjectOutputStream output2 = new ObjectOutputStream(s2.getOutputStream())) {
@@ -181,14 +186,16 @@ public class Executor {
      * @return une Map avec les lettres comme clés et les chiffres comme valeurs
      */
     public static Map<String, Integer> parseur(String s) {
+        String regex = "(?<!\\d)([A-Z]+)";
         Pattern pattern = Pattern.compile("(\\d+)([A-Z])");
         Map<String, Integer> res = new HashMap<>();
-
-        if (s == null) {
+        
+        String sss = s.replaceAll(regex, "1$1");
+        if (sss == null) {
             return res;
         }
 
-        Matcher match = pattern.matcher(s);
+        Matcher match = pattern.matcher(sss);
         while (match.find()) {
             String lettre = match.group(2);
             int chiffre = Integer.parseInt(match.group(1));

@@ -143,7 +143,6 @@ public class Machine{
                 a.createRessource(nb_dispo, ressource);
                 System.out.println(port + " ajouté : "+ nb_dispo + " " + ressource);
             }
-
             a.manageRequest();
         } catch (Exception e){
             

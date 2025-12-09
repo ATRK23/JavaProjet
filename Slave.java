@@ -30,23 +30,45 @@ public class Slave implements Runnable {
             System.out.println("[START] new client.");
             ObjectInputStream input_client = new ObjectInputStream(client.getInputStream());
             ObjectOutputStream output_client = new ObjectOutputStream(client.getOutputStream());
-            String entry = ((String) input_client.readObject());
-            
-            
-            //Ajoute des "1" devant chaque lettre si recoit A + 2C -> D
-            String regex = "(?<!\\d)([A-Z]+)";
-            String messagePrepare = entry.replaceAll(regex, "1$1");
+            Object o = input_client.readObject();
+            System.out.println(o.getClass());
+            if(o instanceof String){
+                System.out.println("if");
+                String entry = ((String) o);
+                
+                //Ajoute des "1" devant chaque lettre si recoit A + 2C -> D
+                String regex = "(?<!\\d)([A-Z]+)";
+                String messagePrepare = entry.replaceAll(regex, "1$1");
+                
+                //Convertis la regles en Map <String, Integer>
+                Map<String, Map<String, Integer>> termes = parse_msg(messagePrepare);
+                Map<String, Integer> consommables = termes.get("Besoin");
+                Map<String, Integer> produits = termes.get("Resultat");
+                
+                Map<String, Integer> stock = notre_Stock(consommables, produits);
+                output_client.writeObject(stock);
+            }
+            else if(o instanceof Map){
+                System.out.println("else");
+                @SuppressWarnings("unchecked")
+                Map<String, Integer> reac = (Map<String, Integer>) o;
 
-            //Convertis la regles en Map <String, Integer>
-            Map<String, Map<String, Integer>> termes = parse_msg(messagePrepare);
-            Map<String, Integer> consommables = termes.get("Besoin");
-            Map<String, Integer> produits = termes.get("Resultat");
-            
-            Map<String, Integer> stock = notre_Stock(consommables, produits);
-            System.out.println(stock);
+                for (Map.Entry<String, Integer> r : reac.entrySet()) {
+                    String ressource = r.getKey();
+                    int nb = r.getValue();
+                    if(nb<0){
+                        machine.removeRessource(nb * -1, ressource);
+                    }
+                    else{
+                        machine.addRessource(nb, ressource);
+                    }
+                }
+                output_client.writeObject("processed");
+            }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            System.err.println(e);
         }
+        System.out.println(machine.get_ressources());
 
     }
     //Renvoie le nom d'une ressource si elle peut etre traiter
