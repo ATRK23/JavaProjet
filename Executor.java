@@ -129,7 +129,7 @@ public class Executor {
                  ObjectInputStream input = new ObjectInputStream(s.getInputStream())) {
 
                 // send the reaction string (or any protocol you expect)
-                output.writeObject("LIST" + reaction);
+                output.writeObject("LIST " + reaction);
                 System.out.println("Connexion au Serveur [OK]");
                 System.out.println("Message sent: \"" + message + "\"");
 
@@ -152,6 +152,7 @@ public class Executor {
             } catch (IOException | ClassNotFoundException E) {
                 System.err.println("Erreur Client : Impossible de se connecter ou de communiquer avec le serveur.");
                 System.err.println("Détails : " + E.getMessage());
+                return false;
             }
 
             if (reactionMap.isEmpty()) {
@@ -165,6 +166,7 @@ public class Executor {
                     } catch (IOException E) {
                         System.err.println("Erreur Client : Impossible de se connecter ou de communiquer avec le serveur.");
                         System.err.println("Détails : " + E.getMessage());
+                        return false;
                     }
                 }
                 return true;
