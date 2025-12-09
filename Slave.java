@@ -1,6 +1,7 @@
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.KeyStore.Entry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,11 +10,15 @@ import java.util.regex.Pattern;
 
 public class Slave implements Runnable {
     private Socket client;
-    private ArrayList<Machine> machines;
+    private Machine machine;
     
-    public Slave(Socket client, ArrayList<Machine> machines){
+    public Slave(Socket client, Machine machine){
         this.client = client;
-        this.machines = machines;
+        this.machine = machine;
+    }
+
+    public Machine getMachine(){
+        return this.machine;
     }
 
     public Socket getClient(){
@@ -32,75 +37,18 @@ public class Slave implements Runnable {
             String regex = "(?<!\\d)([A-Z]+)";
             String messagePrepare = entry.replaceAll(regex, "1$1");
 
-            //Traite chaque regles un par un, en partant du principe que / est notre separateur
-            String[] messages = messagePrepare.split("/");
-            for (String message : messages){
-                //Convertis la regles en Map <String, Integer>
-                Map<String, Map<String, Integer>> termes = parse_msg(message);
-
-                Map<String, Integer> consommables = termes.get("Besoin");
-                Map<String, Integer> produits = termes.get("Resultat");
-                
-                Map<String, Machine> bosseur = get_Machine_Travail(consommables);
-                Map<String, Machine> receveur = get_Machine_Recoit(produits);
-                //System.out.println(receveur);
-                //System.out.println(bosseur);
-                if(bosseur == null || receveur == null){
-                    System.out.println(message + " abort");
-                    output_client.writeUTF(message + " abort");
-                }
-                else{
-                    output_client.writeUTF("Ok");
-                    System.out.println(message + " Ok");
-                }
-            }
+            //Convertis la regles en Map <String, Integer>
+            Map<String, Map<String, Integer>> termes = parse_msg(messagePrepare);
+            Map<String, Integer> consommables = termes.get("Besoin");
+            Map<String, Integer> produits = termes.get("Resultat");
+            
+            Map<String, Integer> stock = notre_Stock(consommables, produits);
+            System.out.println(stock);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
 
     }
-
-    //Fonction qui donne une liste de machine + quel besoin il s'occupe
-    public Map<String, Machine> get_Machine_Travail(Map<String, Integer> consommables){
-        Map<String, Machine> total = new HashMap<>();
-        String ressouPro;
-        for(Machine m : machines){
-            ressouPro = get_ressources_produce(consommables, m);
-            if(ressouPro != null){
-                total.put(ressouPro, m);
-                consommables.remove(ressouPro);
-            }
-            if(consommables.size() == 0){
-                break;
-            }
-        }
-        //System.out.println("Machine");
-        //System.out.println(total);
-        if(total.size() == 0 || consommables.size() > 0){
-            return null;
-        }
-        return total;
-    }
-
-    public Map<String, Machine> get_Machine_Recoit(Map<String, Integer> production){
-        Map<String, Machine> total = new HashMap<>();
-
-        for(Machine m : machines){
-            for (Map.Entry<String, Integer> entree : production.entrySet()) {
-                String ressource = entree.getKey();
-                if(m.is_ressources_in(ressource) != 0){ 
-                    if (!total.containsKey(ressource)) {
-                        total.put(ressource, m);
-                    }
-                }
-            }
-        }
-        if(total.size() < production.size()){
-            return null;
-        }
-        return total;
-    }
-
     //Renvoie le nom d'une ressource si elle peut etre traiter
     public String get_ressources_produce(Map<String, Integer> besoins, Machine machine){
         for (Map.Entry<String, Integer> entree : besoins.entrySet()) {
@@ -140,5 +88,24 @@ public class Slave implements Runnable {
             res.put(lettre, chiffre);
         }
         return res;
+    }
+
+    public Map<String, Integer> notre_Stock(Map<String, Integer> besoins, Map<String, Integer> produits){
+        Map<String, Integer> stock = new HashMap<>();
+        for (Map.Entry<String, Integer> entree : besoins.entrySet()) {
+            String ressource = entree.getKey();
+            int nb = entree.getValue();
+            if( nb <= machine.is_ressources_in(ressource)){ 
+                stock.put(ressource, nb * -1);
+            }
+        }
+        for (Map.Entry<String, Integer> entree : produits.entrySet()) {
+            String ressource = entree.getKey();
+            int nb = entree.getValue(); 
+            if( machine.can_Receive(ressource)){ 
+                stock.put(ressource, nb);
+            }
+        }
+        return stock;
     }
 }
