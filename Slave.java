@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /*
 * Classe Slave correspondant au thread qui gere la communication entre la machine et l'executor
@@ -13,6 +15,8 @@ import java.util.regex.Pattern;
 * machine : Machine associée au Slave
  */
 public class Slave implements Runnable {
+    private static final Logger LOGGER = Logger.getLogger(Slave.class.getName());
+
     private Socket client;
     private Machine machine;
     
@@ -57,7 +61,7 @@ public class Slave implements Runnable {
             if(o instanceof String){
                 String entry = ((String) o);
                 
-                System.out.println("Message recu : " + o);
+                LOGGER.info("[SLAVE] Message recu : " + o);
                 //Convertis la reaction en Map<String, Integer>
                 Map<String, Map<String, Integer>> termes = parse_msg(entry);
                 Map<String, Integer> consommables = termes.get("Besoin");
@@ -65,13 +69,13 @@ public class Slave implements Runnable {
                 
                 Map<String, Integer> stock = notre_Stock(consommables, produits);
                 output_client.writeObject(stock);
-                System.out.println("Action effectuable envoyé : " + stock);
-                System.out.println("Stock actuel : "+ machine.get_ressources());
+                LOGGER.info("[SLAVE] Action effectuable envoyé : " + stock);
+                LOGGER.info("[SLAVE] Stock actuel : "+ machine.get_ressources());
             }
             else if(o instanceof Map){
                 @SuppressWarnings("unchecked")
                 Map<String, Integer> reac = (Map<String, Integer>) o;
-                System.out.println("Action à effectuer recu : " + reac);
+                LOGGER.info("[SLAVE] Action à effectuer recu : " + reac);
                 for (Map.Entry<String, Integer> r : reac.entrySet()) {
                     String ressource = r.getKey();
                     int nb = r.getValue();
@@ -83,10 +87,10 @@ public class Slave implements Runnable {
                         }
                     }
                 }
-                System.out.println("Processed\nNouveau Stock : " + machine.get_ressources());
+                LOGGER.info("[SLAVE] Processed\nNouveau Stock : " + machine.get_ressources());
             }
         } catch (Exception e) {
-            System.err.println(e);
+            LOGGER.log(Level.SEVERE, "[SLAVE] Erreur dans le thread Slave", e);
         }
 
     }

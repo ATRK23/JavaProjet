@@ -3,6 +3,8 @@ import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +18,8 @@ import java.util.regex.Pattern;
 * server : ServerSocket pour écouter les connexions entrantes
 */
 public class Machine{
+    private static final Logger LOGGER = Logger.getLogger(Machine.class.getName());
+
     /* Attributs */
     private Map< String,Integer> ressources;
     private ExecutorService pool;
@@ -38,7 +42,7 @@ public class Machine{
         try{
             this.server = new ServerSocket(this.port);
         } catch (IOException E){
-            E.printStackTrace();
+            LOGGER.log(Level.SEVERE, "[MACHINE] Erreur lors de l'ouverture du serveur sur le port " + this.port, E);
         }
         this.pool = Executors.newFixedThreadPool(this.poolSize);
     }
@@ -178,13 +182,13 @@ public class Machine{
     */
     public void manageRequest(){
         try {
-            System.out.println("Waiting for connections...");
+            LOGGER.info("[MACHINE] Machine en attente de connexions sur le port " + port);
             while(!isFinished){
                 this.pool.execute(new Slave(server.accept(), this));
             }
 
         } catch (IOException E) {
-            E.printStackTrace();
+            LOGGER.log(Level.SEVERE, "[MACHINE] Erreur lors de l'acceptation d'une connexion", E);
         }
     }
 
@@ -221,34 +225,34 @@ public class Machine{
     public static void main(String[] args){
         int port = 0;
         if(args.length != 2){
-            System.err.println("Usage : java Machine <port> <ressources> \n#Example : java Machine 30000 3A/2B/0D");
+            LOGGER.severe("[MACHINE] Usage : java Machine <port> <ressources> \n#Example : java Machine 30000 3A/2B/0D");
             return;
         }
         try {
             port = Integer.parseInt(args[0]);
         } catch (Exception e) {
-            System.err.println("NumberFormatException, port invalide");
+            LOGGER.log(Level.SEVERE, "[MACHINE] NumberFormatException, port invalide", e);
             return;
         }
 
         Map<String, Integer> ressources = parseur(args[1]);
         if(ressources == null){
-            System.err.println("Usage : java Machine <port> <ressources> \n#Example : java Machine 30000 3A/2B/0D");
+            LOGGER.severe("[MACHINE] Usage : java Machine <port> <ressources> \n#Example : java Machine 30000 3A/2B/0D");
             return;
         }
 
         try {
             Machine a = new Machine(port, 6);
-            System.out.println("Machine au port : " + port);
+            LOGGER.info("[MACHINE] Machine démarrée sur le port : " + port);
             for (Map.Entry<String, Integer> res : ressources.entrySet()) {
                 String ressource = res.getKey();
                 int nb_dispo = res.getValue();
                 a.createRessource(nb_dispo, ressource);
-                System.out.println("Ajouté : "+ nb_dispo + ressource);
+                LOGGER.info("[MACHINE] Ressource initialisée : " + nb_dispo + ressource);
             }
             a.manageRequest();
         } catch (Exception e){
-            System.err.println(e.getMessage());
+            LOGGER.log(Level.SEVERE, "[MACHINE] Erreur lors de l'exécution de la machine", e);
         }
     }
 } 

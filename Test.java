@@ -2,8 +2,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Test {
+    private static final Logger LOGGER = Logger.getLogger(Test.class.getName());
+
     public static void main(String[] args) {
         List<String[]> machines = new ArrayList<>();
         String executorArgs = null;
@@ -23,7 +27,7 @@ public class Test {
                 }
                 executorArgs = args[++i];
             } else {
-                System.err.println("Argument inconnu ignoré : " + arg);
+                LOGGER.warning("[TEST] Argument inconnu ignoré : " + arg);
             }
         }
 
@@ -36,7 +40,7 @@ public class Test {
         try {
             for (String[] machine : machines) {
                 if (machine.length < 2) {
-                    System.err.println("Format machine invalide. Attendu : \"<port> <ressources>\"");
+                    LOGGER.severe("[TEST] Format machine invalide. Attendu : \"<port> <ressources>\"");
                     return;
                 }
                 List<String> cmd = Arrays.asList("java", "Machine", machine[0], machine[1]);
@@ -58,12 +62,12 @@ public class Test {
             executorProcess.inheritIO();
             Process exec = executorProcess.start();
             int code = exec.waitFor();
-            System.out.println("Executor terminé avec le code : " + code);
+            LOGGER.info("[TEST] Executor terminé avec le code : " + code);
         } catch (IOException e) {
-            System.err.println("Echec lors du lancement des processus : " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "[TEST] Echec lors du lancement des processus", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            System.err.println("Interruption lors de l'attente de l'executor : " + e.getMessage());
+            LOGGER.log(Level.WARNING, "[TEST] Interruption lors de l'attente de l'executor", e);
         } finally {
             for (Process p : machineProcesses) {
                 p.destroy();
@@ -82,7 +86,7 @@ public class Test {
     }
 
     private static void usage() {
-        System.err.println("Usage : java Test --machine \"<port> <ressources>\" [--machine ...] --executor \"<args executor>\"");
-        System.err.println("Exemple : java Test --machine \"30000 3A/2B\" --machine \"30001 1A\" --executor \"--reaction 3A+2B->C --machine localhost:30000 --machine localhost:30001\"");
+        LOGGER.severe("[TEST] Usage : java Test --machine \"<port> <ressources>\" [--machine ...] --executor \"<args executor>\"");
+        LOGGER.severe("[TEST] Exemple : java Test --machine \"30000 3A/2B\" --machine \"30001 1A\" --executor \"--reaction 3A+2B->C --machine localhost:30000 --machine localhost:30001\"");
     }
 }

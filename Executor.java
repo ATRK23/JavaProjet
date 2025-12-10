@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /* 
  * Classe Executor
@@ -19,6 +21,8 @@ import java.util.regex.Pattern;
  * 
  */
 public class Executor {
+    private static final Logger LOGGER = Logger.getLogger(Executor.class.getName());
+
     /*     * Méthode main
      * 
      * @param args : arguments de la ligne de commande
@@ -32,7 +36,7 @@ public class Executor {
 
             if (arg.startsWith("--")) {
                 if (i + 1 >= args.length) {
-                    System.err.println("Erreur: L'indicateur " + arg + " nécessite une valeur.");
+                    LOGGER.severe("[EXECUTOR] Erreur: L'indicateur " + arg + " nécessite une valeur.");
                     return;
                 }
 
@@ -46,12 +50,12 @@ public class Executor {
                         machineAddress = machineAddress + "/" + value;
                         break;
                     default:
-                        System.err.println("Avertissement: Indicateur inconnu ignoré: " + arg);
+                        LOGGER.warning("[EXECUTOR] Avertissement: Indicateur inconnu ignoré: " + arg);
                         break;
                 }
                 i++;
             } else {
-                System.err.println("Avertissement: Argument non reconnu ignoré: " + arg);
+                LOGGER.warning("[EXECUTOR] Avertissement: Argument non reconnu ignoré: " + arg);
             }
         }
 
@@ -62,7 +66,7 @@ public class Executor {
             message = message + r + "/";
         }
 
-        System.out.println(message);
+        LOGGER.info("[EXECUTOR] Réactions agrégées: " + message);
 
         // Build a dynamic list of host:port pairs, ignoring empty entries
         java.util.List<String[]> macList = new ArrayList<>();
@@ -70,30 +74,30 @@ public class Executor {
             if (e == null || e.trim().isEmpty()) {
                 continue;
             }
-            System.out.println(e);
+            LOGGER.info("[EXECUTOR] Machine ciblée : " + e);
             String[] parts = e.split(":", 2);
             if (parts.length == 2) {
                 macList.add(parts);
             } else {
-                System.err.println("Adresse machine invalide (attendu host:port): " + e);
+                LOGGER.warning("[EXECUTOR] Adresse machine invalide (attendu host:port): " + e);
             }
         }
 
         String[][] mac = macList.toArray(new String[0][]);
         if (mac.length > 0) {
             for (int i = 0; i < mac.length; i++) {
-                System.out.println(" host: " + mac[i][0] + " port: " + mac[i][1]);
+                LOGGER.info("[EXECUTOR] Machine configurée -> host: " + mac[i][0] + " port: " + mac[i][1]);
             }
         } else {
-            System.err.println("Aucune adresse machine fournie.");
+            LOGGER.severe("[EXECUTOR] Aucune adresse machine fournie.");
             return;
         }
         for (String r : reactions) {
-            System.out.println(" reaction: " + r);
+            LOGGER.info("[EXECUTOR] Reaction à traiter: " + r);
             if(checkreaction(r, mac, message)){
-                System.out.println("Reaction " + r + " processed successfully.");
+                LOGGER.info("[EXECUTOR] Reaction " + r + " processed successfully.");
             } else {
-                System.out.println("Reaction " + r + " could not be fully processed.");
+                LOGGER.warning("[EXECUTOR] Reaction " + r + " could not be fully processed.");
             }
         }
         // Example call to checkreaction (optional):
@@ -108,13 +112,13 @@ public class Executor {
      */
     static boolean checkreaction(String reaction, String[][] mac, String message) {
         if (mac == null || mac.length == 0) {
-            System.err.println("Aucune adresse machine fournie pour checkreaction.");
+            LOGGER.severe("[EXECUTOR] Aucune adresse machine fournie pour checkreaction.");
             return false;
         }
 
         List<Integer> results = new ArrayList<>();
         Map<String, Integer> reactionMap = parseur(reaction);
-        System.out.println("reactionMap:"+reactionMap);
+        LOGGER.info("[EXECUTOR] reactionMap:" + reactionMap);
         Map<String, Integer> finalReactionMap = new HashMap<>();
 
         for (int i = 0; i < mac.length; i++) {
@@ -123,7 +127,7 @@ public class Executor {
             try {
                 port = Integer.parseInt(mac[i][1]);
             } catch (NumberFormatException ex) {
-                System.err.println("Port invalide pour " + host + ": " + mac[i][1]);
+                LOGGER.warning("[EXECUTOR] Port invalide pour " + host + ": " + mac[i][1]);
                 continue;
             }
 
@@ -133,8 +137,8 @@ public class Executor {
 
                 // send the reaction string (or any protocol you expect)
                 output.writeObject("LIST " + reaction);
-                System.out.println("Connexion au Serveur [OK]");
-                System.out.println("Message sent: \"" + reaction + "\"");
+                LOGGER.info("[EXECUTOR] Connexion au Serveur [OK]");
+                LOGGER.info("[EXECUTOR] Message sent: \"" + reaction + "\"");
 
                 Object obj = input.readObject();
                 if (obj instanceof Map) {
@@ -147,14 +151,13 @@ public class Executor {
                             finalReactionMap.put(e, reponse.get(e));
                         }
                     }
-                    System.out.println("Message reçu: \"" + reponse + "\"");
+                    LOGGER.info("[EXECUTOR] Message reçu: \"" + reponse + "\"");
                 } else {
-                    System.err.println("Réponse inattendue du serveur: " + obj);
+                    LOGGER.warning("[EXECUTOR] Réponse inattendue du serveur: " + obj);
                 }
 
             } catch (IOException | ClassNotFoundException E) {
-                System.err.println("Erreur Client : Impossible de se connecter ou de communiquer avec le serveur.");
-                System.err.println("Détails : " + E.getMessage());
+                LOGGER.log(Level.SEVERE, "[EXECUTOR] Erreur Client : Impossible de se connecter ou de communiquer avec le serveur.", E);
                 return false;
             }
             HashSet<Integer> hashSet = new HashSet<>(results);
@@ -170,8 +173,7 @@ public class Executor {
                         output2.writeObject(finalReactionMap);
 
                     } catch (IOException E) {
-                        System.err.println("Erreur Client : Impossible de se connecter ou de communiquer avec le serveur.");
-                        System.err.println("Détails : " + E.getMessage());
+                        LOGGER.log(Level.SEVERE, "[EXECUTOR] Erreur Client : Impossible de se connecter ou de communiquer avec le serveur.", E);
                         return false;
                     }
                 }
