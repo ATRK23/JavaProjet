@@ -6,15 +6,27 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/*
+* Classe Slave correspondant au thread qui gere la communication entre la machine et l'executor
+* Chaque Slave est un thread qui gere un client
+* client : Socket du client
+* machine : Machine associée au Slave
+ */
 public class Slave implements Runnable {
     private Socket client;
     private Machine machine;
     
+    /*
+    * Constructeur de la classe Slave
+    * @param client : Socket du client
+    * @param machine : Machine associée au Slave
+    */
     public Slave(Socket client, Machine machine){
         this.client = client;
         this.machine = machine;
     }
 
+    //Getters
     public Machine getMachine(){
         return this.machine;
     }
@@ -23,6 +35,11 @@ public class Slave implements Runnable {
         return this.client;
     }
 
+    /*
+    * Méthode run
+    * Gère la communication entre la machine et l'executor
+    */
+    @Override
     public void run() {
         try{
             ObjectOutputStream output_client = new ObjectOutputStream(client.getOutputStream());
@@ -51,10 +68,8 @@ public class Slave implements Runnable {
                     int nb = r.getValue();
                     if(machine.can_Receive(ressource)){
                         if(nb<0){
-                            System.out.println("ppppppppppppppppppppp" + nb);
                             machine.removeRessource(nb * -1, ressource);
                         }else{
-                            System.out.println("hhhhhhhhhhhhhhhhhhhhhhhhh" + nb);
                             machine.addRessource(nb, ressource);
                         }
                     }
@@ -66,7 +81,14 @@ public class Slave implements Runnable {
         }
 
     }
-    //Renvoie le nom d'une ressource si elle peut etre traiter
+
+    /*
+    * Méthode get_ressources_produce
+    * Vérifie si la machine possède les ressources nécessaires pour produire une réaction
+    * 
+    * @param besoins : Map des ressources consommables
+    * @param machine : Machine à vérifier
+    */
     public String get_ressources_produce(Map<String, Integer> besoins, Machine machine){
         for (Map.Entry<String, Integer> entree : besoins.entrySet()) {
             String ressource = entree.getKey();
@@ -78,39 +100,14 @@ public class Slave implements Runnable {
         return null;
     }
 
-
-    //Parsing des regles
-    public Map<String, Map<String, Integer>> parse_msg(String entry) throws IllegalArgumentException{
-        String[] message = entry.split("->");
-        if(message.length != 2){
-            throw new IllegalArgumentException("Format pas bon\nBon format : 3A + 2C -> 4A");
-        }
-        Map<String, Integer> consommables = parseur(message[0].trim());
-        Map<String, Integer> produits = parseur(message[1].trim());
-  
-        Map<String, Map<String, Integer>> res = new HashMap<>();
-        res.put("Besoin", consommables);
-        res.put("Resultat", produits);
-        return res;
-    }
-
-    public static Map<String, Integer> parseur(String s){
-        //Ajoute des "1" devant chaque lettre si recoit A + 2C -> D
-        String regex = "(?<!\\d)([A-Z]+)";
-        String messagePrepare = s.replaceAll(regex, "1$1");
-
-        Pattern pattern = Pattern.compile("(\\d+)([A-Z])");
-        Map<String, Integer> res = new HashMap<>();
-
-        Matcher match = pattern.matcher(messagePrepare);
-        while (match.find()){
-            String lettre = match.group(2);
-            int chiffre = Integer.parseInt(match.group(1));
-            res.put(lettre, chiffre);
-        }
-        return res;
-    }
-
+    /*
+    * Méthode notre_Stock
+    * Calcule le stock que la machine peut fournir pour une réaction donnée
+    * 
+    * @param besoins : Map des ressources consommables
+    * @param produits : Map des ressources produites
+    * @return une Map représentant le stock que la machine peut fournir pour la réaction
+    */
     public Map<String, Integer> notre_Stock(Map<String, Integer> besoins, Map<String, Integer> produits){
         Map<String, Integer> stock = new HashMap<>();
         for (Map.Entry<String, Integer> entree : besoins.entrySet()) {
@@ -128,5 +125,54 @@ public class Slave implements Runnable {
             }
         }
         return stock;
+    }
+
+    //Parseur de message
+
+    /*
+    * Parse un message de la forme "3A + 2C -> 4A" en une Map<String, Map<String, Integer>>
+    * La clé "Besoin" contient une Map des ressources consommables
+    * La clé "Resultat" contient une Map des ressources produites 
+    *   
+    * @param entry : chaîne de caractères à analyser
+    * @return une Map avec les ressources consommables et produites
+    */
+    public Map<String, Map<String, Integer>> parse_msg(String entry) throws IllegalArgumentException{
+        String[] message = entry.split("->");
+        if(message.length != 2){
+            throw new IllegalArgumentException("Format pas bon\nBon format : 3A + 2C -> 4A");
+        }
+        Map<String, Integer> consommables = parseur(message[0].trim());
+        Map<String, Integer> produits = parseur(message[1].trim());
+  
+        Map<String, Map<String, Integer>> res = new HashMap<>();
+        res.put("Besoin", consommables);
+        res.put("Resultat", produits);
+        return res;
+    }
+
+    /*
+    * Méthode parseur
+    * Convertis une chaîne de caractères en une Map<String, Integer>
+    * Les lettres représentent les ressources et les chiffres représentent les quantités
+    * 
+    * @param s : chaîne de caractères à analyser
+    * @return une Map avec les lettres comme clés (ressource) et les chiffres comme valeurs (quantité)
+    */
+    public static Map<String, Integer> parseur(String s){
+        //Ajoute des "1" devant chaque lettre si recoit A + 2C -> D
+        String regex = "(?<!\\d)([A-Z]+)";
+        String messagePrepare = s.replaceAll(regex, "1$1");
+
+        Pattern pattern = Pattern.compile("(\\d+)([A-Z])");
+        Map<String, Integer> res = new HashMap<>();
+
+        Matcher match = pattern.matcher(messagePrepare);
+        while (match.find()){
+            String lettre = match.group(2);
+            int chiffre = Integer.parseInt(match.group(1));
+            res.put(lettre, chiffre);
+        }
+        return res;
     }
 }
