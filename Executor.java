@@ -114,6 +114,8 @@ public class Executor {
 
         List<Integer> results = new ArrayList<>();
         Map<String, Integer> reactionMap = parseur(reaction);
+        System.out.println("reaction:"+reaction);
+        System.out.println("reactionMap:"+reactionMap);
         Map<String, Integer> finalReactionMap = new HashMap<>();
 
         for (int i = 0; i < mac.length; i++) {
@@ -133,7 +135,7 @@ public class Executor {
                 // send the reaction string (or any protocol you expect)
                 output.writeObject("LIST " + reaction);
                 System.out.println("Connexion au Serveur [OK]");
-                System.out.println("Message sent: \"" + message + "\"");
+                System.out.println("Message sent: \"" + reaction + "\"");
 
                 Object obj = input.readObject();
                 if (obj instanceof Map) {
@@ -143,6 +145,7 @@ public class Executor {
                         if (reactionMap.containsKey(e)) {
                             results.add(i);
                             reactionMap.remove(e);
+                            System.out.println("oui");
                             finalReactionMap.put(e, reponse.get(e));
                         }
                     }
@@ -159,6 +162,9 @@ public class Executor {
             HashSet<Integer> hashSet = new HashSet<>(results);
             results.clear();
             results.addAll(hashSet);
+
+            System.out.println("Remaining reactions to process: " + reactionMap);
+            System.out.println(finalReactionMap);
             if (reactionMap.isEmpty()) {
                 // send the finalReactionMap back to servers that matched
                 for (int n : results) {
@@ -185,14 +191,16 @@ public class Executor {
      * @return une Map avec les lettres comme clés et les chiffres comme valeurs
      */
     public static Map<String, Integer> parseur(String s) {
+        String regex = "(?<!\\d)([A-Z]+)";
+        String messagePrepare = s.replaceAll(regex, "1$1");
         Pattern pattern = Pattern.compile("(\\d+)([A-Z])");
         Map<String, Integer> res = new HashMap<>();
 
-        if (s == null) {
+        if ( messagePrepare == null) {
             return res;
         }
 
-        Matcher match = pattern.matcher(s);
+        Matcher match = pattern.matcher(messagePrepare);
         while (match.find()) {
             String lettre = match.group(2);
             int chiffre = Integer.parseInt(match.group(1));
