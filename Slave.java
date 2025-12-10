@@ -28,13 +28,14 @@ public class Slave implements Runnable {
     public void run() {
         try{
             System.out.println("[START] new client.");
-            ObjectInputStream input_client = new ObjectInputStream(client.getInputStream());
             ObjectOutputStream output_client = new ObjectOutputStream(client.getOutputStream());
+            ObjectInputStream input_client = new ObjectInputStream(client.getInputStream());
             Object o = input_client.readObject();
             System.out.println(o.getClass());
             if(o instanceof String){
                 System.out.println("if");
                 String entry = ((String) o);
+                System.out.println(entry);
                 
                 //Ajoute des "1" devant chaque lettre si recoit A + 2C -> D
                 String regex = "(?<!\\d)([A-Z]+)";
@@ -52,15 +53,20 @@ public class Slave implements Runnable {
                 System.out.println("else");
                 @SuppressWarnings("unchecked")
                 Map<String, Integer> reac = (Map<String, Integer>) o;
-
+                System.out.println(o);
+                
                 for (Map.Entry<String, Integer> r : reac.entrySet()) {
+                    System.out.println(r.getValue() * -1);
+                    System.out.println(r.getKey());
                     String ressource = r.getKey();
                     int nb = r.getValue();
-                    if(nb<0){
-                        machine.removeRessource(nb * -1, ressource);
-                    }
-                    else{
-                        machine.addRessource(nb, ressource);
+                    if(machine.has_ressource(ressource, nb)){
+                        if(nb<0){
+                            machine.removeRessource(nb * -1, ressource);
+                        }
+                        else{
+                            machine.addRessource(nb, ressource);
+                        }
                     }
                 }
                 output_client.writeObject("processed");
