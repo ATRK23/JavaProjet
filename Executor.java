@@ -114,7 +114,6 @@ public class Executor {
 
         List<Integer> results = new ArrayList<>();
         Map<String, Integer> reactionMap = parseur(reaction);
-        System.out.println("reaction:"+reaction);
         System.out.println("reactionMap:"+reactionMap);
         Map<String, Integer> finalReactionMap = new HashMap<>();
 
@@ -145,7 +144,6 @@ public class Executor {
                         if (reactionMap.containsKey(e)) {
                             results.add(i);
                             reactionMap.remove(e);
-                            System.out.println("oui");
                             finalReactionMap.put(e, reponse.get(e));
                         }
                     }
@@ -163,8 +161,6 @@ public class Executor {
             results.clear();
             results.addAll(hashSet);
 
-            System.out.println("Remaining reactions to process: " + reactionMap);
-            System.out.println(finalReactionMap);
             if (reactionMap.isEmpty()) {
                 // send the finalReactionMap back to servers that matched
                 for (int n : results) {
