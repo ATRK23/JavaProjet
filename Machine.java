@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 public class Machine{
     private Map< String,Integer> ressources;
-    //private static ArrayList<Machine> database = new ArrayList<>();
     
     private ExecutorService pool;
     private int port;
@@ -19,7 +18,6 @@ public class Machine{
 
     public Machine(int port, int poolSize){
         this.ressources = new HashMap<>();
-        //database.add(this);
 
         this.port = port;
         this.poolSize = poolSize;
@@ -94,7 +92,6 @@ public class Machine{
             System.out.println("Waiting for connections...");
             while(!isFinished){
                 this.pool.execute(new Slave(server.accept(), this));
-                System.out.println("Connection  [OK] ");
             }
 
         } catch (IOException E) {
@@ -103,10 +100,13 @@ public class Machine{
     }
 
     public static Map<String, Integer> parseur(String s){
+        String regex = "(?<!\\d)([A-Z]+)";
+        String messagePrepare = s.replaceAll(regex, "1$1");
+
         Pattern pattern = Pattern.compile("(\\d+)([A-Z])");
         Map<String, Integer> res = new HashMap<>();
 
-        Matcher match = pattern.matcher(s);
+        Matcher match = pattern.matcher(messagePrepare);
         while (match.find()){
             String lettre = match.group(2);
             int chiffre = Integer.parseInt(match.group(1));
@@ -136,16 +136,15 @@ public class Machine{
 
         try {
             Machine a = new Machine(port, 6);
-
+            System.out.println("Machine au port : " + port);
             for (Map.Entry<String, Integer> res : ressources.entrySet()) {
                 String ressource = res.getKey();
                 int nb_dispo = res.getValue();
                 a.createRessource(nb_dispo, ressource);
-                System.out.println(port + " ajouté : "+ nb_dispo + " " + ressource);
+                System.out.println("Ajouté : "+ nb_dispo + ressource);
             }
             a.manageRequest();
         } catch (Exception e){
-            
             System.err.println(e.getMessage());
         }
     }

@@ -1,8 +1,6 @@
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.security.KeyStore.Entry;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -27,37 +25,28 @@ public class Slave implements Runnable {
 
     public void run() {
         try{
-            System.out.println("[START] new client.");
             ObjectOutputStream output_client = new ObjectOutputStream(client.getOutputStream());
             ObjectInputStream input_client = new ObjectInputStream(client.getInputStream());
             Object o = input_client.readObject();
-            System.out.println(o.getClass());
             if(o instanceof String){
-                System.out.println("if");
                 String entry = ((String) o);
-                System.out.println(entry);
                 
-                //Ajoute des "1" devant chaque lettre si recoit A + 2C -> D
-                String regex = "(?<!\\d)([A-Z]+)";
-                String messagePrepare = entry.replaceAll(regex, "1$1");
-                
-                //Convertis la regles en Map <String, Integer>
-                Map<String, Map<String, Integer>> termes = parse_msg(messagePrepare);
+                System.out.println("Message recu : " + o);
+                //Convertis la reaction en Map<String, Integer>
+                Map<String, Map<String, Integer>> termes = parse_msg(entry);
                 Map<String, Integer> consommables = termes.get("Besoin");
                 Map<String, Integer> produits = termes.get("Resultat");
                 
                 Map<String, Integer> stock = notre_Stock(consommables, produits);
                 output_client.writeObject(stock);
+                System.out.println("Action effectuable envoyer : " + stock);
+                System.out.println("Stock actuel : "+ machine.get_ressources());
             }
             else if(o instanceof Map){
-                System.out.println("else");
                 @SuppressWarnings("unchecked")
                 Map<String, Integer> reac = (Map<String, Integer>) o;
-                System.out.println(o);
-                
+                System.out.println("Action a effectuer recu : " + reac);
                 for (Map.Entry<String, Integer> r : reac.entrySet()) {
-                    System.out.println(r.getValue() * -1);
-                    System.out.println(r.getKey());
                     String ressource = r.getKey();
                     int nb = r.getValue();
                     if(machine.has_ressource(ressource, nb)){
@@ -65,16 +54,16 @@ public class Slave implements Runnable {
                             machine.removeRessource(nb * -1, ressource);
                         }
                         else{
+                            System.out.println(nb);
                             machine.addRessource(nb, ressource);
                         }
                     }
                 }
-                output_client.writeObject("processed");
+                System.out.println("Processed\nNouveau Stock : " + machine.get_ressources());
             }
         } catch (Exception e) {
             System.err.println(e);
         }
-        System.out.println(machine.get_ressources());
 
     }
     //Renvoie le nom d'une ressource si elle peut etre traiter
@@ -106,10 +95,14 @@ public class Slave implements Runnable {
     }
 
     public static Map<String, Integer> parseur(String s){
+        //Ajoute des "1" devant chaque lettre si recoit A + 2C -> D
+        String regex = "(?<!\\d)([A-Z]+)";
+        String messagePrepare = s.replaceAll(regex, "1$1");
+
         Pattern pattern = Pattern.compile("(\\d+)([A-Z])");
         Map<String, Integer> res = new HashMap<>();
 
-        Matcher match = pattern.matcher(s);
+        Matcher match = pattern.matcher(messagePrepare);
         while (match.find()){
             String lettre = match.group(2);
             int chiffre = Integer.parseInt(match.group(1));
