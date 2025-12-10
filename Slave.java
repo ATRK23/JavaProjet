@@ -27,10 +27,19 @@ public class Slave implements Runnable {
     }
 
     //Getters
+
+    /**
+     * 
+     * @return Instance de la machine associée
+     */
     public Machine getMachine(){
         return this.machine;
     }
 
+    /**
+     * 
+     * @return Socket du client
+     */
     public Socket getClient(){
         return this.client;
     }

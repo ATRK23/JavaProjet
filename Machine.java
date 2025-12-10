@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 * isFinished : indique si la machine doit arrêter de gérer les connexions
 * server : ServerSocket pour écouter les connexions entrantes
 */
-
 public class Machine{
     /* Attributs */
     private Map< String,Integer> ressources;
@@ -45,21 +44,43 @@ public class Machine{
     }
 
     //Getters
+
+    /**
+     * 
+     * @return port utilisé par la machine
+     */
     public int getPort(){
         return this.port;
     }
 
+    /**
+     * 
+     * @return poolSize de la machine
+     */
     public int getPoolSize(){
         return this.poolSize;
     }
 
+    /**
+     * 
+     * @return état (terminé ou non) de la machine
+     */
     public boolean getIsFinished(){
         return this.isFinished;
     }
 
+    /**
+     * 
+     * @return pool de la machine
+     */
     public ExecutorService getPool(){
         return this.pool;
     }
+
+    /**
+     * 
+     * @return Map de toutes les ressources disponibles dans la machine
+     */
     public synchronized Map<String,Integer> get_ressources(){
         return this.ressources;
     }
@@ -188,6 +209,12 @@ public class Machine{
         return res;
     }
 
+    /**
+     * 
+     * @param args Arguments de lancement : <port> <ressources de départ (au format 1A ) (séparées par un /)>
+     * Example : java Machine 30000 3A/2B/0D
+     *
+     */
     public static void main(String[] args){
         int port = 0;
         if(args.length != 2){
