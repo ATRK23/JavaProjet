@@ -49,12 +49,12 @@ public class Slave implements Runnable {
                 for (Map.Entry<String, Integer> r : reac.entrySet()) {
                     String ressource = r.getKey();
                     int nb = r.getValue();
-                    if(machine.has_ressource(ressource, nb)){
+                    if(machine.can_Receive(ressource)){
                         if(nb<0){
+                            System.out.println("ppppppppppppppppppppp" + nb);
                             machine.removeRessource(nb * -1, ressource);
-                        }
-                        else{
-                            System.out.println(nb);
+                        }else{
+                            System.out.println("hhhhhhhhhhhhhhhhhhhhhhhhh" + nb);
                             machine.addRessource(nb, ressource);
                         }
                     }
