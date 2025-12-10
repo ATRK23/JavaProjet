@@ -65,13 +65,13 @@ public class Slave implements Runnable {
                 
                 Map<String, Integer> stock = notre_Stock(consommables, produits);
                 output_client.writeObject(stock);
-                System.out.println("Action effectuable envoyer : " + stock);
+                System.out.println("Action effectuable envoyé : " + stock);
                 System.out.println("Stock actuel : "+ machine.get_ressources());
             }
             else if(o instanceof Map){
                 @SuppressWarnings("unchecked")
                 Map<String, Integer> reac = (Map<String, Integer>) o;
-                System.out.println("Action a effectuer recu : " + reac);
+                System.out.println("Action à effectuer recu : " + reac);
                 for (Map.Entry<String, Integer> r : reac.entrySet()) {
                     String ressource = r.getKey();
                     int nb = r.getValue();
@@ -123,14 +123,14 @@ public class Slave implements Runnable {
             String ressource = entree.getKey();
             int nb = entree.getValue();
             if( nb <= machine.is_ressources_in(ressource)){ 
-                stock.put(ressource, nb * -1);
+                stock.put(ressource, stock.getOrDefault(ressource, 0) - nb);
             }
         }
         for (Map.Entry<String, Integer> entree : produits.entrySet()) {
             String ressource = entree.getKey();
             int nb = entree.getValue(); 
             if( machine.can_Receive(ressource)){ 
-                stock.put(ressource, nb);
+                stock.put(ressource, stock.getOrDefault(ressource, 0) + nb);
             }
         }
         return stock;
@@ -143,10 +143,11 @@ public class Slave implements Runnable {
     * La clé "Besoin" contient une Map des ressources consommables
     * La clé "Resultat" contient une Map des ressources produites 
     *   
-    * @param entry : chaîne de caractères à analyser
-    * @return une Map avec les ressources consommables et produites
-    */
+     * @param entry : chaîne de caractères à analyser
+     * @return une Map avec les ressources consommables et produites
+     */
     public Map<String, Map<String, Integer>> parse_msg(String entry) throws IllegalArgumentException{
+        entry = entry.replaceFirst("(?i)^\\s*LIST\\s+", "").trim();
         String[] message = entry.split("->");
         if(message.length != 2){
             throw new IllegalArgumentException("Format pas bon\nBon format : 3A + 2C -> 4A");

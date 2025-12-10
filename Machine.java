@@ -111,6 +111,9 @@ public class Machine{
         if(nb_res<0){
             throw new Exception("cannot add negative value");        
         } else {
+            if(!ressources.containsKey(res)){
+                throw new Exception("cannot add undefined ressource");
+            }
             ressources.put(res, ressources.get(res)+nb_res);
         }
     }
