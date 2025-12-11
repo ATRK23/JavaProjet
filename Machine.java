@@ -1,3 +1,9 @@
+/**
+ * @author Arthur BAILLET
+ * @author Jacques ZHANG
+ * @author Jessy BRIET
+ */
+
 import java.io.*;
 import java.net.*;
 import java.util.HashMap;

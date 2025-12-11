@@ -1,3 +1,9 @@
+/**
+ * @author Arthur BAILLET
+ * @author Jacques ZHANG
+ * @author Jessy BRIET
+ */
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;

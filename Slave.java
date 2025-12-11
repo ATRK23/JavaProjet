@@ -1,3 +1,9 @@
+/**
+ * @author Arthur BAILLET
+ * @author Jacques ZHANG
+ * @author Jessy BRIET
+ */
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
