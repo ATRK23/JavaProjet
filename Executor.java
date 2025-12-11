@@ -148,7 +148,7 @@ public class Executor {
                         if (reactionMap.containsKey(e)) {
                             results.add(i);
                             reactionMap.remove(e);
-                            finalReactionMap.put(e, reponse.get(e));
+                            finalReactionMap.put(e, reponse.get(e)+finalReactionMap.get(e));
                         }
                     }
                     LOGGER.info("[EXECUTOR] Message reçu: \"" + reponse + "\"");
